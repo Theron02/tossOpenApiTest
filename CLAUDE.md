@@ -30,13 +30,15 @@
 |------|------|
 | 백엔드 | Kotlin, Spring Boot 3.x, Spring MVC, Gradle (Kotlin DSL), JDK 21 |
 | DB | PostgreSQL (영속), Redis (시세 캐싱·토큰·세션) |
-| 외부 API | 한국투자증권(KIS) OpenAPI — REST + WebSocket |
+| 외부 API | 토스증권 Open API v1.1.5 — REST (OAuth 2.0) |
 | 프론트 | Flutter 3.x, Dart, MVVM, Riverpod |
-| 실시간 | KIS WebSocket → 백엔드 중계 → 앱(STOMP/WebSocket) |
-| 인증 | JWT (앱 ↔ 백엔드) |
+| 실시간 | 토스 시세 폴링(`/prices`·`/candles`) → 백엔드 → 앱. 토스 WebSocket 미지원(추후 예정) |
+| 인증 | 토스: OAuth 2.0 Client Credentials / 앱↔백엔드: JWT |
 
-> KIS OpenAPI는 모의투자 계좌로 시세 조회·주문을 정식 지원한다. 실거래 전환은
-> 도메인 토글로만 분리하며, 기본값은 항상 모의투자다.
+> 토스증권 Open API는 **모의투자(sandbox) 환경을 제공하지 않는다.** 따라서 모의 거래는
+> 백엔드가 자체 구현한다(토스 시세는 실제 수신, 주문은 가상 체결로 DB 기록).
+> 실거래 전환은 도메인 토글로만 분리하며, 기본값은 항상 모의 거래다.
+> 가격·수량은 토스가 문자열(decimal)로 주며, KRW=정수/USD=소수점이다.
 
 ---
 
@@ -47,15 +49,15 @@ Flutter (모니터링·제어)
    │  REST (조회·설정)  /  WebSocket (실시간 손익·체결·신호)
    ▼
 Spring Boot (트레이딩 엔진 = "차트 보고 판단하는 뇌")
-   ├─ MarketDataCollector   KIS WebSocket 구독, OHLCV 수집
+   ├─ MarketDataCollector   토스 /prices·/candles 폴링, OHLCV 수집
    ├─ IndicatorCalculator   이평선·RSI·볼린저 등 지표 계산
    ├─ StrategyEngine        TradingStrategy 평가 → BUY / SELL / HOLD 신호
    ├─ RiskManager           주문 직전 가드 (손절·한도·kill switch)
-   ├─ OrderExecutor         KIS 주문 API 호출, 체결 폴링, 상태머신
-   └─ Scheduler             장 운영시간 체크, KIS 토큰 갱신
+   ├─ OrderExecutor         Paper(가상 체결)/Toss(실거래 POST /orders), 상태머신
+   └─ Scheduler             장 운영시간 체크, 토스 토큰 갱신
    │
    ├─ PostgreSQL  계좌·주문·체결·포지션·전략설정
-   └─ Redis       현재가 캐시, KIS 토큰, 멱등키
+   └─ Redis       현재가 캐시, 토스 토큰, 멱등키
 ```
 
 ### 자동매매 판단 루프 (장중 반복)
@@ -107,7 +109,7 @@ auto-trading/
 - **언어**: 코드 식별자·주석은 영어, 설명·커밋 메시지는 한국어 허용.
 - **시간**: 모든 시각은 `Asia/Seoul` 기준. 저장은 UTC, 표시는 KST.
 - **통화·수량**: 금액은 정수(원) 또는 `BigDecimal`. 부동소수점으로 돈 계산 금지.
-- **금지**: 어떤 코드도 KIS 앱키/시크릿, JWT 시크릿을 하드코딩하지 않는다.
+- **금지**: 어떤 코드도 토스 client_id/client_secret, JWT 시크릿을 하드코딩하지 않는다.
   비밀값은 환경변수·`.env`(gitignore)로만 주입.
 - **로그**: 모든 주문 시도·체결·리스크 차단은 구조화 로그로 남긴다 (감사 추적).
 
@@ -117,6 +119,8 @@ auto-trading/
 
 - 새 전략을 추가할 때는 `TradingStrategy` 인터페이스만 구현한다. 엔진 코드를 직접 고치지 않는다.
 - 주문을 발생시키는 코드는 **반드시** `RiskManager`를 거치게 한다. 우회 경로를 만들지 않는다.
-- 실계좌 주문 코드를 생성할 때는 명시적으로 사용자 확인을 받는다. 기본은 모의투자.
-- 외부 API(KIS) 응답 스키마가 불확실하면 추측하지 말고 사용자에게 실제 응답 예시를 요청한다.
+- 실계좌 주문 코드를 생성할 때는 명시적으로 사용자 확인을 받는다. 기본은 모의 거래.
+- 외부 API(토스) 응답 스키마는 OpenAPI 스펙(v1.1.5)을 따른다. 가격·수량은 String→BigDecimal로 파싱.
 - 금융 손익 계산 로직은 반드시 단위 테스트를 동반한다.
+- **모든 TASK를 완료하면** `back/docs/WORKFLOW_readme_update.md` 규칙에 따라
+  루트 `README.md`(개발 현황 체크리스트 등)를 갱신한다. 사실만 반영한다.

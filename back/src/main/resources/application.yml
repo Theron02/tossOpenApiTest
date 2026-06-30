@@ -2,16 +2,27 @@ spring:
   application:
     name: auto-trading-backend
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/autotrading}
-    username: ${DB_USERNAME:autotrading}
-    password: ${DB_PASSWORD:}
+    # 비밀값은 환경변수로만 주입한다. 평문 금지. (예시는 application-example.yml)
+    url: jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT:5432}/${SUPABASE_DB_NAME:postgres}
+    username: ${SUPABASE_DB_USER}
+    password: ${SUPABASE_DB_PASSWORD}
+    hikari:
+      # 무료 티어 커넥션 한도 보호. 보수적으로 시작.
+      maximum-pool-size: ${DB_POOL_SIZE:3}
+      connection-timeout: 10000
+      data-source-properties:
+        # PgBouncer(transaction 모드) 사용 시 서버사이드 prepared statement 충돌 방지.
+        # direct connection(5432)에서는 무해, pooler(6543)에서는 필수.
+        prepareThreshold: 0
   jpa:
     hibernate:
-      ddl-auto: validate
+      # 연결 테스트 단계(02-A)에선 스키마를 건드리지 않는다(validate). 테이블 생성은 TASK_02 본작업.
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+    show-sql: ${JPA_SHOW_SQL:false}
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
-    open-in-view: false
 
 # 모든 시각 처리 기준은 Asia/Seoul (저장은 UTC)
 app:
