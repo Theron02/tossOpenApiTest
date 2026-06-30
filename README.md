@@ -102,7 +102,7 @@ tossOpenApiTest/
 - [x] Repository 계층 + 테이블 생성
 - [x] 토스 연동 (인증 → 현재가 → 캔들 수집) — 라이브 검증 통과
 - [ ] 전략 엔진 (TradingStrategy + 골든크로스/RSI)
-- [ ] 리스크 관리 + 주문 실행기 (`PaperOrderExecutor`)
+- [x] 리스크 관리 + 주문 실행기 (`PaperOrderExecutor`) — 가상 체결, RiskManager 경유 (단위 검증)
 - [ ] Flutter 모니터링 화면
 - [ ] 모의 거래 전체 흐름 검증 (전략→리스크→체결→손익)
 - [ ] 실거래 전환 (`TossOrderExecutor`, 토스 POST /orders) — 충분한 검증 이후

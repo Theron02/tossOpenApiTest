@@ -11,5 +11,8 @@ interface TradeOrderRepository : JpaRepository<TradeOrder, UUID> {
     // 멱등성 확인 — 주문 중복 방지의 핵심
     fun existsByIdempotencyKey(idempotencyKey: String): Boolean
 
+    // 멱등 재요청 시 기존 주문을 그대로 반환하기 위한 조회
+    fun findByIdempotencyKey(idempotencyKey: String): TradeOrder?
+
     fun findByStockCodeAndStatusIn(stockCode: String, statuses: Collection<OrderStatus>): List<TradeOrder>
 }
