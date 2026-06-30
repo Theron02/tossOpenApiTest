@@ -16,6 +16,21 @@ enum class Market { KOSPI, KOSDAQ }
 enum class CandleInterval { MIN_1, MIN_5, MIN_15, MIN_30, HOUR_1, DAY_1 }
 
 /**
+ * 통화. 토스 시세/캔들 응답의 `currency` 매핑.
+ * 국내(KRW)는 정수, 미국(USD)은 소수점. unknown 값은 [UNKNOWN]으로 fallback(스펙 요구).
+ */
+enum class Currency {
+    KRW,
+    USD,
+    UNKNOWN;
+
+    companion object {
+        fun from(raw: String?): Currency =
+            entries.firstOrNull { it.name.equals(raw, ignoreCase = true) } ?: UNKNOWN
+    }
+}
+
+/**
  * 주문 상태머신.
  *
  * ```

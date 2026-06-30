@@ -24,6 +24,12 @@ spring:
       hibernate:
         format_sql: true
 
+# 토스증권 Open API (v1.1.5). 비밀값은 환경변수로만 주입한다. 평문 금지.
+toss:
+  base-url: ${TOSS_BASE_URL:https://openapi.tossinvest.com}
+  client-id: ${TOSS_CLIENT_ID}
+  client-secret: ${TOSS_CLIENT_SECRET}
+
 # 모든 시각 처리 기준은 Asia/Seoul (저장은 UTC)
 app:
   timezone: Asia/Seoul

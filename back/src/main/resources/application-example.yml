@@ -15,6 +15,11 @@
 #   JPA_SHOW_SQL          true | false               (기본 false)
 #   DB_POOL_SIZE          HikariCP 최대 풀 크기      (기본 3)
 #
+#   ── 토스증권 Open API (TASK_03) ──
+#   TOSS_BASE_URL         기본 https://openapi.tossinvest.com
+#   TOSS_CLIENT_ID        토스 OAuth2 client_id      (비밀값)
+#   TOSS_CLIENT_SECRET    토스 OAuth2 client_secret  (비밀값)
+#
 # 조립되는 JDBC URL:
 #   jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}
 #
