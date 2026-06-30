@@ -4,3 +4,7 @@ build/
 .env
 
 TASK_*.md
+
+.DS_Store
+
+workflow_readme_update.md
