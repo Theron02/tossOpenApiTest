@@ -1,8 +1,11 @@
 package com.autotrading.domain.order
 
 import com.autotrading.domain.risk.RiskCheckContext
+import com.autotrading.domain.risk.RiskDecision
 import com.autotrading.domain.risk.RiskManager
+import com.autotrading.domain.risk.RiskRejectedException
 import com.autotrading.domain.type.OrderSide
+import com.autotrading.domain.type.OrderStatus
 import com.autotrading.domain.type.OrderType
 import com.autotrading.entity.Execution
 import com.autotrading.entity.PaperAccount
@@ -16,6 +19,7 @@ import com.autotrading.repository.PositionRepository
 import com.autotrading.repository.RiskSettingRepository
 import com.autotrading.repository.StockRepository
 import com.autotrading.repository.TradeOrderRepository
+import com.autotrading.service.RealizedPnlService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -41,6 +45,7 @@ class PaperOrderExecutor(
     private val executionRepository: ExecutionRepository,
     private val marketDataClient: TossMarketDataClient,
     private val riskManager: RiskManager,
+    private val realizedPnlService: RealizedPnlService,
 ) : OrderExecutor {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -62,8 +67,8 @@ class PaperOrderExecutor(
         val referencePrice = currentPrice(command.stockCode)
         val checkPrice = command.price ?: referencePrice
 
-        // 모든 주문은 RiskManager를 경유한다(위반 시 RiskRejectedException).
-        riskManager.check(
+        // 모든 주문은 RiskManager를 경유한다. 차단 시 RiskRejectedException으로 실행을 중단한다.
+        val decision = riskManager.check(
             RiskCheckContext(
                 account = account,
                 riskSetting = riskSetting,
@@ -71,8 +76,13 @@ class PaperOrderExecutor(
                 quantity = command.quantity,
                 price = checkPrice,
                 existingPosition = position,
+                todayRealizedPnl = realizedPnlService.todayRealizedPnl(command.accountId),
+                hasOpenOrderSameSide = hasOpenOrderSameSide(command),
             ),
         )
+        if (decision is RiskDecision.Rejected) {
+            throw RiskRejectedException(decision.reason, decision.detail)
+        }
 
         val order = TradeOrder(
             account = account,
@@ -103,6 +113,12 @@ class PaperOrderExecutor(
         log.info("가상 체결 id={} {} {} qty={} price={} balance={}", order.id, command.side, command.stockCode, command.quantity, fillPrice, account.cashBalance)
         return order
     }
+
+    /** 동일 계좌·종목·방향의 미체결(PENDING/PARTIAL) 주문이 있는지 — 중복 주문 가드용. */
+    private fun hasOpenOrderSameSide(command: OrderCommand): Boolean =
+        orderRepository
+            .findByStockCodeAndStatusIn(command.stockCode, listOf(OrderStatus.PENDING, OrderStatus.PARTIAL))
+            .any { it.account.id == command.accountId && it.side == command.side }
 
     /** 현재가(원). 미국 소수점 종목은 이번 범위 밖(KR 정수 기준). */
     private fun currentPrice(stockCode: String): Long =

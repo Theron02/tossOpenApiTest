@@ -1,8 +1,10 @@
 package com.autotrading.domain.order
 
 import com.autotrading.domain.risk.RejectReason
+import com.autotrading.domain.risk.RiskDecision
 import com.autotrading.domain.risk.RiskManager
 import com.autotrading.domain.risk.RiskRejectedException
+import com.autotrading.service.RealizedPnlService
 import com.autotrading.domain.type.Market
 import com.autotrading.domain.type.OrderSide
 import com.autotrading.domain.type.OrderStatus
@@ -43,12 +45,13 @@ class PaperOrderExecutorTest {
     private val orderRepository = mockk<TradeOrderRepository>(relaxed = true)
     private val executionRepository = mockk<ExecutionRepository>(relaxed = true)
     private val marketDataClient = mockk<TossMarketDataClient>()
-    private val riskManager = mockk<RiskManager>(relaxed = true)
+    private val riskManager = mockk<RiskManager>()
+    private val realizedPnlService = mockk<RealizedPnlService>(relaxed = true)
 
     private val executor = PaperOrderExecutor(
         accountRepository, stockRepository, riskSettingRepository,
         positionRepository, orderRepository, executionRepository,
-        marketDataClient, riskManager,
+        marketDataClient, riskManager, realizedPnlService,
     )
 
     private val accountId = UUID.randomUUID()
@@ -61,6 +64,8 @@ class PaperOrderExecutorTest {
         every { stockRepository.findById(code) } returns Optional.of(stock)
         every { riskSettingRepository.findByAccountId(accountId) } returns mockk(relaxed = true)
         every { positionRepository.findByAccountIdAndStockCode(accountId, code) } returns position
+        every { orderRepository.findByStockCodeAndStatusIn(code, any()) } returns emptyList()
+        every { riskManager.check(any()) } returns RiskDecision.Approved
         // 제네릭 save(S):S 는 relaxed 기본값이 Object라 캐스팅 실패 → firstArg()로 명시 스텁.
         every { orderRepository.save(any()) } answers { firstArg() }
         every { positionRepository.save(any()) } answers { firstArg() }
@@ -138,7 +143,7 @@ class PaperOrderExecutorTest {
         val account = PaperAccount(name = "t", cashBalance = 1_000_000, initialSeed = 1_000_000)
         stubCommonLookups(account)
         priceOf(70_000)
-        every { riskManager.check(any()) } throws RiskRejectedException(RejectReason.KILL_SWITCH, "kill")
+        every { riskManager.check(any()) } returns RiskDecision.Rejected(RejectReason.KILL_SWITCH, "kill")
 
         assertFailsWith<RiskRejectedException> { executor.execute(buyMarket(10)) }
         verify(exactly = 0) { orderRepository.save(any()) }
