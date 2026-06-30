@@ -8,4 +8,7 @@ interface StrategyConfigRepository : JpaRepository<StrategyConfig, UUID> {
     fun findByEnabledTrue(): List<StrategyConfig>
 
     fun findByAccountIdAndEnabledTrue(accountId: UUID): List<StrategyConfig>
+
+    // 조회 API용 — 계정의 전체 전략 설정
+    fun findByAccountId(accountId: UUID): List<StrategyConfig>
 }

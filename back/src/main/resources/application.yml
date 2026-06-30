@@ -33,3 +33,11 @@ toss:
 # 모든 시각 처리 기준은 Asia/Seoul (저장은 UTC)
 app:
   timezone: Asia/Seoul
+  # 앱↔백엔드 JWT 인증. 비밀값은 환경변수로만.
+  jwt:
+    secret: ${APP_JWT_SECRET}
+    expiration-minutes: ${APP_JWT_EXP_MIN:120}
+  # 단일 운영자 자격증명(User 테이블 없음). password-hash는 BCrypt 해시.
+  auth:
+    username: ${APP_AUTH_USERNAME:operator}
+    password-hash: ${APP_AUTH_PASSWORD_HASH}

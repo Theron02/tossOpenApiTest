@@ -20,6 +20,13 @@
 #   TOSS_CLIENT_ID        토스 OAuth2 client_id      (비밀값)
 #   TOSS_CLIENT_SECRET    토스 OAuth2 client_secret  (비밀값)
 #
+#   ── 앱↔백엔드 JWT 인증 (TASK_06) ──
+#   APP_JWT_SECRET        HS256 비밀(256bit≈32자 이상)  (비밀값)
+#   APP_JWT_EXP_MIN       토큰 만료(분)                 (기본 120)
+#   APP_AUTH_USERNAME     운영자 아이디                 (기본 operator)
+#   APP_AUTH_PASSWORD_HASH 운영자 비밀번호의 BCrypt 해시 (비밀값)
+#     해시 생성 예: htpasswd -bnBC 10 "" '비밀번호' | tr -d ':\n' | sed 's/$2y/$2a/'
+#
 # 조립되는 JDBC URL:
 #   jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}
 #
