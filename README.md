@@ -104,6 +104,7 @@ tossOpenApiTest/
 - [x] 전략 엔진 (TradingStrategy + 골든크로스/RSI, 지표 SMA·RSI, RiskManager 경유) — 자동 루프 스케줄러는 다음
 - [x] 리스크 관리 + 주문 실행기 (`PaperOrderExecutor`) — 가상 체결, RiskManager 경유 (단위 검증)
 - [ ] Flutter 모니터링 화면
+- [x] 백테스트 엔진 (look-ahead 차단, 수수료·세금, MDD·승률·CAGR) — 회귀 테스트 포함
 - [ ] 모의 거래 전체 흐름 검증 (전략→리스크→체결→손익)
 - [ ] 실거래 전환 (`TossOrderExecutor`, 토스 POST /orders) — 충분한 검증 이후
 
