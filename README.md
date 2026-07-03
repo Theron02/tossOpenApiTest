@@ -105,6 +105,7 @@ tossOpenApiTest/
 - [x] 리스크 관리 + 주문 실행기 (`PaperOrderExecutor`) — 가상 체결, RiskManager 경유 (단위 검증)
 - [ ] Flutter 모니터링 화면
 - [x] 백테스트 엔진 (look-ahead 차단, 수수료·세금, MDD·승률·CAGR) — 회귀 테스트 포함
+- [x] 조회·제어 REST API (JWT 인증, DTO 변환, kill switch confirm, 예외 일괄 처리) — `back/docs/API_CONTRACT.md`
 - [ ] 모의 거래 전체 흐름 검증 (전략→리스크→체결→손익)
 - [ ] 실거래 전환 (`TossOrderExecutor`, 토스 POST /orders) — 충분한 검증 이후
 
