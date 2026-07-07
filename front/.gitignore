@@ -1,0 +1,22 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# 코드 생성 산출물 (build_runner 로 재생성)
+*.freezed.dart
+*.g.dart
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+
+# OHTER
+TASK_*.md

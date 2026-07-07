@@ -87,7 +87,9 @@ tossOpenApiTest/
 │   └── docs/
 │       └── DB_SCHEMA.md   DB 스키마 설계 명세
 └── front/                 Flutter (MVVM)
-    └── CLAUDE.md          프론트 작업 규칙
+    ├── CLAUDE.md          프론트 작업 규칙
+    ├── README.md          앱 실행·구조·계약 매핑
+    └── lib/               app·core·shared·features(auth/dashboard/positions/orders/signals/strategy/risk/backtest)
 ```
 
 ---
@@ -103,7 +105,7 @@ tossOpenApiTest/
 - [x] 토스 연동 (인증 → 현재가 → 캔들 수집) — 라이브 검증 통과
 - [x] 전략 엔진 (TradingStrategy + 골든크로스/RSI, 지표 SMA·RSI, RiskManager 경유) — 자동 루프 스케줄러는 다음
 - [x] 리스크 관리 + 주문 실행기 (`PaperOrderExecutor`) — 가상 체결, RiskManager 경유 (단위 검증)
-- [ ] Flutter 모니터링 화면
+- [x] Flutter 모니터링·제어 앱 (MVVM·Riverpod·freezed) — 로그인·대시보드·포지션·주문/체결·신호·전략·리스크(kill switch)·백테스트, JWT 인터셉터, 계약(`API_CONTRACT.md`) 기준 연동 (`front/`)
 - [x] 백테스트 엔진 (look-ahead 차단, 수수료·세금, MDD·승률·CAGR) — 회귀 테스트 포함
 - [x] 조회·제어 REST API (JWT 인증, DTO 변환, kill switch confirm, 예외 일괄 처리) — `back/docs/API_CONTRACT.md`
 - [ ] 모의 거래 전체 흐름 검증 (전략→리스크→체결→손익)
