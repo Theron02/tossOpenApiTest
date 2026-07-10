@@ -11,7 +11,18 @@ import '../repository/auth_repository.dart';
 class AuthController extends AsyncNotifier<bool> {
   @override
   Future<bool> build() async {
-    return ref.read(tokenStorageProvider).token != null;
+    final tokens = ref.read(tokenStorageProvider);
+    // 인터셉터가 401(만료·무효 토큰)로 토큰을 지우면 미인증으로 전환해
+    // 라우터가 로그인 화면으로 보내게 한다.
+    void onTokenChange() {
+      if (tokens.token == null && state.valueOrNull == true) {
+        state = const AsyncData(false);
+      }
+    }
+
+    tokens.addListener(onTokenChange);
+    ref.onDispose(() => tokens.removeListener(onTokenChange));
+    return tokens.token != null;
   }
 
   Future<void> login(String username, String password) async {
