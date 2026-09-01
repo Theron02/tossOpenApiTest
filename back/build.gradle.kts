@@ -57,3 +57,27 @@ kotlin {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// 로컬 실행 편의: back/.env 를 읽어 bootRun 프로세스에 환경변수로 주입한다.
+// 값은 그대로 넣고(셸 확장 없음 → BCrypt 해시의 '$' 안전), 감싼 따옴표만 제거한다.
+// .env 는 .gitignore 대상(비밀값). 없으면 아무것도 하지 않는다.
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    val envFile = file(".env")
+    if (envFile.exists()) {
+        envFile.readLines()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && !it.startsWith("#") && it.contains('=') }
+            .forEach { line ->
+                val idx = line.indexOf('=')
+                val key = line.substring(0, idx).trim()
+                var value = line.substring(idx + 1).trim()
+                if (value.length >= 2 &&
+                    ((value.startsWith("\"") && value.endsWith("\"")) ||
+                        (value.startsWith("'") && value.endsWith("'")))
+                ) {
+                    value = value.substring(1, value.length - 1)
+                }
+                if (key.isNotEmpty()) environment(key, value)
+            }
+    }
+}
