@@ -101,6 +101,76 @@ tossOpenApiTest/
 
 ---
 
+## 실행 방법
+
+세 모듈은 독립 실행된다. 최소로는 **백엔드만** 띄우면 되고, ML 예측(`ML` 전략)을 쓸 때만 `ml/`를,
+모니터링 UI가 필요할 때만 `front/`를 함께 띄운다. 실행 순서 권장: (선택) ML → 백엔드 → 프론트.
+
+**사전 준비**: JDK 21 · Python 3.11+ · Flutter 3.22+
+
+### 1) 백엔드 (Spring Boot, 포트 8080)
+
+```bash
+cd back
+
+# 최초 1회: 비밀값 환경변수 준비. application-example.yml 을 참고해 back/.env 작성
+#   필요한 값: SUPABASE_DB_*, TOSS_CLIENT_ID/SECRET, APP_JWT_SECRET(32자↑), APP_AUTH_PASSWORD_HASH
+#   (bootRun 이 back/.env 를 자동 로딩한다. .env 는 gitignore)
+
+./gradlew bootRun            # http://localhost:8080 기동 (.env 자동 주입)
+./gradlew test               # 테스트
+```
+
+**자동매매 루프 로컬 테스트** — 기본은 꺼져 있다. `back/.env` 에 아래를 추가하고 재기동:
+```env
+TRADING_ENABLED=true
+TRADING_IGNORE_MARKET_HOURS=true    # 장 운영시간(평일 09:00~15:30 KST) 무시
+TRADING_SEED_DEMO=true              # 데모 계좌·리스크설정·활성 전략(GOLDEN_CROSS/005930/1분봉) 시드
+TRADING_POLL_INTERVAL_MS=10000      # (선택) 루프 주기 10초
+```
+> `TRADING_SEED_DEMO=true` 는 **실제 DB에 데모 행을 쓴다**(없을 때만). GOLDEN_CROSS 는 교차 시점에만
+> 주문을 내므로 대부분 tick 은 `신호 산출 … HOLD` 로그만 보인다.
+
+### 2) ML 예측 서비스 (FastAPI, 포트 8000) — `ML` 전략 쓸 때만
+
+```bash
+cd ml
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+python -m training.train                       # 모델 학습 → artifacts/model.joblib
+uvicorn app.main:app --host 0.0.0.0 --port 8000 # 예측 서비스 기동
+pytest                                          # 테스트
+```
+> 백엔드는 `ML_BASE_URL`(기본 `http://localhost:8000`)로 호출한다. ML 서비스가 꺼져 있어도 백엔드는
+> 죽지 않고 해당 전략을 HOLD 로 안전 처리한다.
+
+### 3) 프론트 (Flutter, 모니터링·제어 앱)
+
+```bash
+cd front
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs   # freezed/json 코드 생성(최초·모델 변경 시)
+
+# 실제 기기/시뮬레이터
+flutter run --dart-define=API_BASE_URL=http://localhost:8080/api/v1
+# 웹(Chrome)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080/api/v1
+#   안드로이드 에뮬레이터에서 호스트 localhost 는 10.0.2.2
+
+flutter test               # 테스트
+```
+
+### 한눈에 보기
+
+| 모듈 | 디렉토리 | 기동 명령 | 포트 | 테스트 |
+|---|---|---|---|---|
+| 백엔드 | `back/` | `./gradlew bootRun` | 8080 | `./gradlew test` |
+| ML | `ml/` | `uvicorn app.main:app --port 8000` | 8000 | `pytest` |
+| 프론트 | `front/` | `flutter run --dart-define=API_BASE_URL=…` | — | `flutter test` |
+
+---
+
 ## 개발 현황
 
 - [x] 프로젝트 설계 (아키텍처·도메인 모델)
