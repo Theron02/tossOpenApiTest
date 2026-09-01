@@ -86,10 +86,17 @@ tossOpenApiTest/
 │   ├── CLAUDE.md          백엔드 작업 규칙
 │   └── docs/
 │       └── DB_SCHEMA.md   DB 스키마 설계 명세
-└── front/                 Flutter (MVVM)
-    ├── CLAUDE.md          프론트 작업 규칙
-    ├── README.md          앱 실행·구조·계약 매핑
-    └── lib/               app·core·shared·features(auth/dashboard/positions/orders/signals/strategy/risk/backtest)
+├── front/                 Flutter (MVVM)
+│   ├── CLAUDE.md          프론트 작업 규칙
+│   ├── README.md          앱 실행·구조·계약 매핑
+│   └── lib/               app·core·shared·features(auth/dashboard/positions/orders/signals/strategy/risk/backtest)
+└── ml/                    Python 상승예측 서비스 (FastAPI + 학습)
+    ├── CLAUDE.md          ML 작업 규칙
+    ├── README.md          서비스 실행·구조
+    ├── docs/ML_API_CONTRACT.md   백엔드 ↔ ML /predict 계약
+    ├── mlcore/            학습·추론 공유 피처·라벨 (skew 방지)
+    ├── app/               추론 서비스 (/predict /health /model-info)
+    └── training/          학습 파이프라인 (baseline 상승확률 모델)
 ```
 
 ---
@@ -108,6 +115,7 @@ tossOpenApiTest/
 - [x] Flutter 모니터링·제어 앱 (MVVM·Riverpod·freezed) — 로그인·대시보드·포지션·주문/체결·신호·전략·리스크(kill switch)·백테스트, JWT 인터셉터, 계약(`API_CONTRACT.md`) 기준 연동 (`front/`)
 - [x] 백테스트 엔진 (look-ahead 차단, 수수료·세금, MDD·승률·CAGR) — 회귀 테스트 포함
 - [x] 조회·제어 REST API (JWT 인증, DTO 변환, kill switch confirm, 예외 일괄 처리) — `back/docs/API_CONTRACT.md`
+- [x] ML 상승예측 서비스 + `MlStrategy` (Python FastAPI `/predict`, baseline P(up) 모델, look-ahead 차단·시간분할·재현성) — 백엔드가 같은 `TradingStrategy` 인터페이스로 끼우고 **RiskManager 그대로 경유**. 예측은 제안일 뿐, 실패는 HOLD 안전 처리 (`ml/`, ML 15개·MlStrategy 7개 테스트 통과)
 - [ ] 모의 거래 전체 흐름 검증 (전략→리스크→체결→손익)
 - [ ] 실거래 전환 (`TossOrderExecutor`, 토스 POST /orders) — 충분한 검증 이후
 

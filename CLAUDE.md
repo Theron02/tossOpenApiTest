@@ -2,8 +2,9 @@
 
 이 문서는 프로젝트 전반의 컨텍스트다. 백엔드/프론트 세부 규칙은 각 하위 디렉토리의 `CLAUDE.md`를 따른다.
 
-- 백엔드: `backend/CLAUDE.md` (Spring Boot + Kotlin, MVC)
-- 프론트: `frontend/CLAUDE.md` (Flutter, MVVM)
+- 백엔드: `back/CLAUDE.md` (Spring Boot + Kotlin, MVC)
+- 프론트: `front/CLAUDE.md` (Flutter, MVVM)
+- ML: `ml/CLAUDE.md` (Python, 예측 서비스 + 학습 파이프라인)
 
 ---
 
@@ -32,6 +33,7 @@
 | DB | PostgreSQL (영속), Redis (시세 캐싱·토큰·세션) |
 | 외부 API | 토스증권 Open API v1.1.5 — REST (OAuth 2.0) |
 | 프론트 | Flutter 3.x, Dart, MVVM, Riverpod |
+| ML | Python 3.11+, FastAPI (추론 서비스), pandas/scikit-learn (학습). 별도 서비스 |
 | 실시간 | 토스 시세 폴링(`/prices`·`/candles`) → 백엔드 → 앱. 토스 WebSocket 미지원(추후 예정) |
 | 인증 | 토스: OAuth 2.0 Client Credentials / 앱↔백엔드: JWT |
 
@@ -52,12 +54,17 @@ Spring Boot (트레이딩 엔진 = "차트 보고 판단하는 뇌")
    ├─ MarketDataCollector   토스 /prices·/candles 폴링, OHLCV 수집
    ├─ IndicatorCalculator   이평선·RSI·볼린저 등 지표 계산
    ├─ StrategyEngine        TradingStrategy 평가 → BUY / SELL / HOLD 신호
+   │     ├─ 규칙 기반 전략 (GoldenCross, RSI ...)
+   │     └─ MlStrategy ──HTTP /predict──▶ Python ML 서비스 (예측 제안)
    ├─ RiskManager           주문 직전 가드 (손절·한도·kill switch)
    ├─ OrderExecutor         Paper(가상 체결)/Toss(실거래 POST /orders), 상태머신
    └─ Scheduler             장 운영시간 체크, 토스 토큰 갱신
    │
    ├─ PostgreSQL  계좌·주문·체결·포지션·전략설정
    └─ Redis       현재가 캐시, 토스 토큰, 멱등키
+
+Python ML 서비스 (ml/) — 예측만. 주문·리스크는 백엔드가.
+   예측은 "제안"이며 RiskManager를 동일하게 통과해야 주문된다.
 ```
 
 ### 자동매매 판단 루프 (장중 반복)
@@ -74,14 +81,18 @@ Spring Boot (트레이딩 엔진 = "차트 보고 판단하는 뇌")
 ## 4. 디렉토리 구조
 
 ```
-auto-trading/
+tossOpenApi/
 ├── CLAUDE.md              ← 이 파일 (전체 컨텍스트)
-├── backend/
+├── back/
 │   ├── CLAUDE.md          ← 백엔드 규칙
 │   └── src/main/kotlin/...
-└── frontend/
-    ├── CLAUDE.md          ← 프론트 규칙
-    └── lib/...
+├── front/
+│   ├── CLAUDE.md          ← 프론트 규칙
+│   └── lib/...
+└── ml/
+    ├── CLAUDE.md          ← ML 서비스 규칙
+    ├── app/               ← 추론 서비스 (FastAPI)
+    └── training/          ← 학습 파이프라인 (오프라인)
 ```
 
 ---
@@ -94,6 +105,7 @@ auto-trading/
 |------|------|
 | `Signal` | 전략이 산출한 매매 신호. `BUY` / `SELL` / `HOLD` |
 | `Strategy` | 매매 규칙 단위. `TradingStrategy` 인터페이스 구현체 |
+| `MlStrategy` | ML 예측을 쓰는 전략. Python ML 서비스(`/predict`)를 호출하는 `TradingStrategy` 구현체 |
 | `Indicator` | 시세에서 파생된 지표값 (MA, RSI, Bollinger 등) |
 | `Candle` / `OHLCV` | 시가·고가·저가·종가·거래량 봉 데이터 |
 | `Position` | 보유 종목 + 수량 + 평단가 |

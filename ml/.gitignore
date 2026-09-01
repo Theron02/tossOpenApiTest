@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# 학습 아티팩트(모델은 버전 태깅해 별도 관리, VCS 미포함)
+artifacts/*
+!artifacts/.gitkeep

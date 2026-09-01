@@ -27,6 +27,11 @@
 #   APP_AUTH_PASSWORD_HASH 운영자 비밀번호의 BCrypt 해시 (비밀값)
 #     해시 생성 예: htpasswd -bnBC 10 "" '비밀번호' | tr -d ':\n' | sed 's/$2y/$2a/'
 #
+#   ── ML 예측 서비스 (TASK_08) ──
+#   ML_BASE_URL           Python 예측 서비스 URL     (기본 http://localhost:8000)
+#   ML_BUY_THRESHOLD      score>=이면 BUY            (기본 0.6)
+#   ML_SELL_THRESHOLD     score<=이면 SELL           (기본 0.4)
+#
 # 조립되는 JDBC URL:
 #   jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}
 #

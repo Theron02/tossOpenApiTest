@@ -30,6 +30,15 @@ toss:
   client-id: ${TOSS_CLIENT_ID}
   client-secret: ${TOSS_CLIENT_SECRET}
 
+# ML 예측 서비스(Python). 내부 서비스라 인증 없음. base-url 은 환경변수로 주입.
+ml:
+  base-url: ${ML_BASE_URL:http://localhost:8000}
+  connect-timeout-ms: ${ML_CONNECT_TIMEOUT_MS:1000}
+  read-timeout-ms: ${ML_READ_TIMEOUT_MS:2000}
+  # score(P(up)) 임계값. 전략 params 로 종목별 오버라이드 가능.
+  buy-threshold: ${ML_BUY_THRESHOLD:0.6}
+  sell-threshold: ${ML_SELL_THRESHOLD:0.4}
+
 # 모든 시각 처리 기준은 Asia/Seoul (저장은 UTC)
 app:
   timezone: Asia/Seoul

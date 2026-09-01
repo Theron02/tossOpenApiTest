@@ -1,0 +1,8 @@
+fastapi>=0.111,<1.0
+uvicorn[standard]>=0.30
+pydantic>=2.7,<3.0
+scikit-learn>=1.4
+numpy>=1.26
+joblib>=1.4
+httpx>=0.27            # FastAPI TestClient 용
+pytest>=8.0

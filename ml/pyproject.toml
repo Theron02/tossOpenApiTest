@@ -1,0 +1,10 @@
+[project]
+name = "autotrading-ml"
+version = "0.1.0"
+description = "자동매매 상승예측 ML 서비스 (추론 + 학습)"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+# ml/ 를 임포트 루트로: `from mlcore ...`, `from app.main import app` 해결
+pythonpath = ["."]
+testpaths = ["tests"]
