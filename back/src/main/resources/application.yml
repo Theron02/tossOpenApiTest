@@ -30,6 +30,16 @@ toss:
   client-id: ${TOSS_CLIENT_ID}
   client-secret: ${TOSS_CLIENT_SECRET}
 
+# 자동매매 루프. 기본 꺼짐(안전). 로컬 테스트: TRADING_ENABLED=true TRADING_IGNORE_MARKET_HOURS=true
+trading:
+  enabled: ${TRADING_ENABLED:false}
+  ignore-market-hours: ${TRADING_IGNORE_MARKET_HOURS:false}
+  poll-interval-ms: ${TRADING_POLL_INTERVAL_MS:60000}
+  initial-delay-ms: ${TRADING_INITIAL_DELAY_MS:10000}
+  candle-count: ${TRADING_CANDLE_COUNT:200}
+  # 로컬 테스트 데모 데이터(계좌·리스크·활성 전략) 시드. 실제 DB에 씀. 기본 꺼짐.
+  seed-demo: ${TRADING_SEED_DEMO:false}
+
 # ML 예측 서비스(Python). 내부 서비스라 인증 없음. base-url 은 환경변수로 주입.
 ml:
   base-url: ${ML_BASE_URL:http://localhost:8000}

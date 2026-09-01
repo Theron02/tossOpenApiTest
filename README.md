@@ -110,7 +110,8 @@ tossOpenApiTest/
 - [x] DB 연결 검증 (Supabase)
 - [x] Repository 계층 + 테이블 생성
 - [x] 토스 연동 (인증 → 현재가 → 캔들 수집) — 라이브 검증 통과
-- [x] 전략 엔진 (TradingStrategy + 골든크로스/RSI, 지표 SMA·RSI, RiskManager 경유) — 자동 루프 스케줄러는 다음
+- [x] 전략 엔진 (TradingStrategy + 골든크로스/RSI, 지표 SMA·RSI, RiskManager 경유)
+- [x] 자동매매 루프 스케줄러 (`TradingScheduler` `@Scheduled` — 활성 전략 캔들 수집 → 평가 → 신호→리스크→주문) — 기본 꺼짐(`trading.enabled`), 장시간 바이패스 토글·데모 시더 제공, 6개 테스트
 - [x] 리스크 관리 + 주문 실행기 (`PaperOrderExecutor`) — 가상 체결, RiskManager 경유 (단위 검증)
 - [x] Flutter 모니터링·제어 앱 (MVVM·Riverpod·freezed) — 로그인·대시보드·포지션·주문/체결·신호·전략·리스크(kill switch)·백테스트, JWT 인터셉터, 계약(`API_CONTRACT.md`) 기준 연동 (`front/`)
 - [x] 백테스트 엔진 (look-ahead 차단, 수수료·세금, MDD·승률·CAGR) — 회귀 테스트 포함
